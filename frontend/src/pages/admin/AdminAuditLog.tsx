@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Download, FileJson, FileText, ScrollText } from "lucide-react";
-import { api } from "../../lib/api";
+import { api,apiErrorMessage  } from "../../lib/api";
 import Reveal from "../../components/Reveal";
 import ErrorState from "../../components/ErrorState";
+import { toast } from "react-hot-toast";
 
 interface AuditLog {
   id: string;
@@ -64,15 +65,46 @@ export default function AdminAuditLog() {
     },
   });
 
-  function exportJson() {
-    const q = actionFilter ? `?action=${actionFilter}` : "";
-    window.open(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/admin/audit-logs/export/json${q}`, "_blank");
-  }
+const handleExportJson = async () => {
+  try {
+    const response = await api.get("/admin/audit-logs/export/json");
 
-  function exportPdf() {
-    const q = actionFilter ? `?action=${actionFilter}` : "";
-    window.open(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/admin/audit-logs/export/pdf${q}`, "_blank");
+    const blob = new Blob(
+      [JSON.stringify(response.data, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "skyport-audit.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    toast.error(apiErrorMessage(err, "Could not export audit log."));
   }
+};
+
+const handleExportPdf = async () => {
+  try {
+    const response = await api.get("/admin/audit-logs/export/pdf", {
+      responseType: "blob",
+    });
+
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "skyport-audit.pdf";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    toast.error(apiErrorMessage(err, "Could not export audit log."));
+  }
+};
 
   return (
     <div>
@@ -82,10 +114,10 @@ export default function AdminAuditLog() {
           <p className="mt-1 text-sm text-slate-400">Every action — logins, bookings, flights, airports, admin changes.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={exportJson} className="btn-secondary text-sm">
+          <button onClick={handleExportJson} className="btn-secondary text-sm">
             <FileJson size={16} /> Export JSON
           </button>
-          <button onClick={exportPdf} className="btn-secondary text-sm">
+          <button  onClick={handleExportPdf}  className="btn-secondary text-sm">
             <FileText size={16} /> Export PDF
           </button>
         </div>

@@ -23,8 +23,7 @@ api.interceptors.response.use(
       original._retry = true;
       isRefreshing = true;
       try {
-        const isAdmin = original.url?.includes("/admin");
-        await api.post(isAdmin ? "/auth/admin/refresh" : "/auth/refresh");
+await api.post("/auth/admin/refresh");
         isRefreshing = false;
         return api(original);
       } catch {

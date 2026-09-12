@@ -89,13 +89,27 @@ export default function AdminFlights() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Flights</h1>
-        <div className="flex gap-2">
-          <input className="input w-56" placeholder="Filter by airline..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          <button onClick={() => setFormOpen((v) => !v)} className="btn-primary text-sm"><Plus size={16} /> New flight</button>
-        </div>
-      </div>
+<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <h1 className="text-2xl font-bold">Flights</h1>
+
+  <div className="flex w-full gap-2 sm:w-auto">
+    <input
+      className="input min-w-0 flex-1 sm:w-56 sm:flex-none"
+      placeholder="Filter by airline..."
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+    />
+
+    <button
+      onClick={() => setFormOpen((v) => !v)}
+      className="btn-primary shrink-0 text-sm"
+    >
+      <Plus size={16} />
+      <span className="hidden sm:inline">New flight</span>
+      <span className="sm:hidden">New</span>
+    </button>
+  </div>
+</div>
 
       {formOpen && (
         <form onSubmit={handleCreate} className="card mt-4 grid gap-3 p-4 sm:grid-cols-3">
@@ -241,7 +255,7 @@ export default function AdminFlights() {
         {isError ? (
           <ErrorState message="Couldn't load flights." onRetry={() => refetch()} />
         ) : isLoading ? <LoadingSpinner /> : (
-          <table className="w-full text-sm">
+         <table className="w-full min-w-[760px] text-sm">
             <thead className="text-left text-slate-400">
               <tr>
                 <th className="p-3">Flight</th><th className="p-3">Route</th><th className="p-3">Departure</th>
