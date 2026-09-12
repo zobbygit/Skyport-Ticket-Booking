@@ -141,18 +141,18 @@ export const paymentsService = {
           boardingGroup: booking.boarding_group,
           cabinClass: booking.cabin_class,
         });
-        await emailService.sendBookingConfirmation(
-          user.email,
-          {
-            passengerName: user.full_name,
-            flightNumber: booking.flight.flight_number,
-            origin: booking.flight.origin_airport.iata_code,
-            destination: booking.flight.destination_airport.iata_code,
-            departureTime: new Date(booking.flight.departure_time).toUTCString(),
-            bookingReference: booking.booking_reference,
-          },
-          pdf
-        );
+  await emailService.sendBoardingPass(
+  user.email,
+  {
+    passengerName: user.full_name,
+    flightNumber: booking.flight.flight_number,
+    origin: booking.flight.origin_airport.iata_code,
+    destination: booking.flight.destination_airport.iata_code,
+    departureTime: new Date(booking.flight.departure_time).toUTCString(),
+    bookingReference: booking.booking_reference,
+  },
+  pdf
+);
       } catch (e) {
         console.error("[stripe-webhook] email failed", e);
       }

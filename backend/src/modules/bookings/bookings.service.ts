@@ -148,41 +148,41 @@ export const bookingsService = {
       "booking"
     );
 
-    (async () => {
-      try {
-        const userRes = await pool.query("SELECT full_name, email FROM users WHERE id = $1", [userId]);
-        const user = userRes.rows[0];
-        const f = updated.flight;
-        const pdf = await generateTicketPdf({
-          passengerName: user.full_name,
-          bookingReference: updated.booking_reference,
-          flightNumber: f.flight_number,
-          originCode: f.origin_airport.iata_code,
-          originCity: f.origin_airport.city,
-          destinationCode: f.destination_airport.iata_code,
-          destinationCity: f.destination_airport.city,
-          departureTime: f.departure_time,
-          gate: f.gate?.code,
-          seat: updated.seat,
-          boardingGroup: updated.boarding_group,
-          cabinClass: updated.cabin_class,
-        });
-        await emailService.sendBoardingPass(
-          user.email,
-          {
-            passengerName: user.full_name,
-            flightNumber: f.flight_number,
-            origin: f.origin_airport.iata_code,
-            destination: f.destination_airport.iata_code,
-            departureTime: new Date(f.departure_time).toUTCString(),
-            bookingReference: updated.booking_reference,
-          },
-          pdf
-        );
-      } catch (e) {
-        console.error("[email] boarding pass email failed", e);
-      }
-    })();
+    // (async () => {
+    //   try {
+    //     const userRes = await pool.query("SELECT full_name, email FROM users WHERE id = $1", [userId]);
+    //     const user = userRes.rows[0];
+    //     const f = updated.flight;
+    //     const pdf = await generateTicketPdf({
+    //       passengerName: user.full_name,
+    //       bookingReference: updated.booking_reference,
+    //       flightNumber: f.flight_number,
+    //       originCode: f.origin_airport.iata_code,
+    //       originCity: f.origin_airport.city,
+    //       destinationCode: f.destination_airport.iata_code,
+    //       destinationCity: f.destination_airport.city,
+    //       departureTime: f.departure_time,
+    //       gate: f.gate?.code,
+    //       seat: updated.seat,
+    //       boardingGroup: updated.boarding_group,
+    //       cabinClass: updated.cabin_class,
+    //     });
+    //     await emailService.sendBoardingPass(
+    //       user.email,
+    //       {
+    //         passengerName: user.full_name,
+    //         flightNumber: f.flight_number,
+    //         origin: f.origin_airport.iata_code,
+    //         destination: f.destination_airport.iata_code,
+    //         departureTime: new Date(f.departure_time).toUTCString(),
+    //         bookingReference: updated.booking_reference,
+    //       },
+    //       pdf
+    //     );
+    //   } catch (e) {
+    //     console.error("[email] boarding pass email failed", e);
+    //   }
+    // })();
 
     return updated;
   },
