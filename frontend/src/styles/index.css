@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+:root {
+  --bg: 255 255 255;
+  --bg-secondary: 248 250 252;
+  --text: 15 23 42;
+  --text-secondary: 100 116 139;
+  --border: 226 232 240;
+  --card: 255 255 255;
+}
+
+.dark {
+  --bg: 8 11 20;
+  --bg-secondary: 15 20 32;
+  --text: 241 245 249;
+  --text-secondary: 148 163 184;
+  --border: 30 41 59;
+  --card: 15 20 32;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border shadow-sm;
+    background-color: rgb(var(--card));
+    border-color: rgb(var(--border));
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 font-semibold transition hover:bg-black/5 dark:hover:bg-white/5;
+    border-color: rgb(var(--border));
+  }
+  .input {
+    @apply w-full rounded-xl border bg-transparent px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-brand-500;
+    border-color: rgb(var(--border));
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium;
+    color: rgb(var(--text-secondary));
+  }
+}
+
+/* Scrollbar fully hidden — page still scrolls normally, the bar just
+   isn't rendered on any browser. */
+html {
+  scrollbar-width: none;
+}
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  display: none;
+}
