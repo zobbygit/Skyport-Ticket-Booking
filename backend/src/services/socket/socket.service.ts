@@ -22,13 +22,13 @@ export function initSocket(server: HttpServer): SocketIOServer {
       const passengerToken = cookies["skyport_at"];
       const adminToken = cookies["skyport_admin_at"];
 
-      if (adminToken) {
-        const payload = verifyAccessToken(adminToken, "admin");
-        socket.data.auth = { id: payload.sub, role: payload.role, aud: "admin" };
-      } else if (passengerToken) {
-        const payload = verifyAccessToken(passengerToken, "passenger");
-        socket.data.auth = { id: payload.sub, role: payload.role, aud: "passenger" };
-      }
+ if (adminToken) {
+  const payload = verifyAccessToken(adminToken);
+  socket.data.auth = { id: payload.sub, role: payload.role, aud: "admin" };
+} else if (passengerToken) {
+  const payload = verifyAccessToken(passengerToken);
+  socket.data.auth = { id: payload.sub, role: payload.role, aud: "passenger" };
+}
       next();
     } catch {
       next(); // allow anonymous connections (public flight-status viewers)
