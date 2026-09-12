@@ -26,14 +26,21 @@ export const env = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
 
-  email: {
-    host: process.env.BREVO_SMTP_HOST || "",
-    port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
-    user: process.env.BREVO_SMTP_USER || "",
-    password: process.env.BREVO_SMTP_PASSWORD || "",
-    fromEmail: process.env.BREVO_FROM_EMAIL || "",
-    fromName: process.env.BREVO_FROM_NAME || "SkyPort",
-  },
+
+// email: {
+//   host: process.env.BREVO_SMTP_HOST || "",
+//   port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
+//   user: process.env.BREVO_SMTP_USER || "",
+//   password: process.env.BREVO_SMTP_PASSWORD || "",
+//   fromEmail: process.env.BREVO_FROM_EMAIL || "",
+//   fromName: process.env.BREVO_FROM_NAME || "SkyPort",
+// },
+
+email: {
+  apiKey: process.env.BREVO_API_KEY || "",
+  fromEmail: process.env.BREVO_FROM_EMAIL || "",
+  fromName: process.env.BREVO_FROM_NAME || "SkyPort",
+},
 
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10),
