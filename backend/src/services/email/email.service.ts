@@ -129,23 +129,21 @@ export const emailService = {
       templates.bookingCancellationTemplate(data)
     ),
 
-  sendBoardingPass: (
-    to: string,
-    data: templates.BookingEmailData,
-    boardingPassPdf: Buffer
-  ) =>
-    send(
-      to,
-      `Boarding pass — ${data.flightNumber}`,
-      templates.boardingPassEmailTemplate(data),
-      [
-        {
-          filename: `SkyPort-BoardingPass-${data.bookingReference}.pdf`,
-          content: boardingPassPdf,
-          contentType: "application/pdf",
-        },
-      ]
-    ),
+sendBoardingPass: (
+  to: string,
+  data: templates.BookingEmailData,
+  boardingPassPdfs: Buffer[]
+) =>
+  send(
+    to,
+    `Boarding passes — ${data.flightNumber}`,
+    templates.boardingPassEmailTemplate(data),
+    boardingPassPdfs.map((pdf, index) => ({
+      filename: `SkyPort-BoardingPass-${data.bookingReference}-${index + 1}.pdf`,
+      content: pdf,
+      contentType: "application/pdf",
+    }))
+  ),
 
   sendFlightStatusUpdate: (
     to: string,
