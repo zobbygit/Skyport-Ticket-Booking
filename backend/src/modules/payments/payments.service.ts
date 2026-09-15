@@ -145,54 +145,54 @@ const userRes = await pool.query(
 
     // Send confirmation email with PDF ticket
 // Send ONE confirmation email containing ONE PDF per passenger
-(async () => {
-  try {
-    const passengers = booking.passengers || [];
-    const boardingPassPdfs: Buffer[] = [];
+// (async () => {
+//   try {
+//     const passengers = booking.passengers || [];
+//     const boardingPassPdfs: Buffer[] = [];
 
-    // Generate one PDF for EACH passenger
-    for (const passenger of passengers) {
-      const pdf = await generateTicketPdf({
-        passengerName: passenger.full_name,
-        bookingReference: booking.booking_reference,
-        flightNumber: booking.flight.flight_number,
-        originCode: booking.flight.origin_airport.iata_code,
-        originCity: booking.flight.origin_airport.city,
-        destinationCode: booking.flight.destination_airport.iata_code,
-        destinationCity: booking.flight.destination_airport.city,
-        departureTime: booking.flight.departure_time,
-        gate: booking.flight.gate?.code,
-        seat: passenger.seat,
-        boardingGroup: passenger.boarding_group,
-        cabinClass: booking.cabin_class,
-      });
+//     // Generate one PDF for EACH passenger
+//     for (const passenger of passengers) {
+//       const pdf = await generateTicketPdf({
+//         passengerName: passenger.full_name,
+//         bookingReference: booking.booking_reference,
+//         flightNumber: booking.flight.flight_number,
+//         originCode: booking.flight.origin_airport.iata_code,
+//         originCity: booking.flight.origin_airport.city,
+//         destinationCode: booking.flight.destination_airport.iata_code,
+//         destinationCity: booking.flight.destination_airport.city,
+//         departureTime: booking.flight.departure_time,
+//         gate: booking.flight.gate?.code,
+//         seat: passenger.seat,
+//         boardingGroup: passenger.boarding_group,
+//         cabinClass: booking.cabin_class,
+//       });
 
-      boardingPassPdfs.push(pdf);
-    }
+//       boardingPassPdfs.push(pdf);
+//     }
 
-    // ONE email containing ALL passenger PDFs
-    await emailService.sendBoardingPass(
-      user.email,
-      {
-        passengerName: user.full_name,
-        flightNumber: booking.flight.flight_number,
-        origin: booking.flight.origin_airport.iata_code,
-        destination: booking.flight.destination_airport.iata_code,
-        departureTime: new Date(
-          booking.flight.departure_time
-        ).toUTCString(),
-        bookingReference: booking.booking_reference,
-      },
-      boardingPassPdfs
-    );
+//     // ONE email containing ALL passenger PDFs
+//     await emailService.sendBoardingPass(
+//       user.email,
+//       {
+//         passengerName: user.full_name,
+//         flightNumber: booking.flight.flight_number,
+//         origin: booking.flight.origin_airport.iata_code,
+//         destination: booking.flight.destination_airport.iata_code,
+//         departureTime: new Date(
+//           booking.flight.departure_time
+//         ).toUTCString(),
+//         bookingReference: booking.booking_reference,
+//       },
+//       boardingPassPdfs
+//     );
 
-    console.log(
-      `[stripe-webhook] Boarding pass email sent with ${boardingPassPdfs.length} PDF(s)`
-    );
-  } catch (e) {
-    console.error("[stripe-webhook] email failed", e);
-  }
-})();
+//     console.log(
+//       `[stripe-webhook] Boarding pass email sent with ${boardingPassPdfs.length} PDF(s)`
+//     );
+//   } catch (e) {
+//     console.error("[stripe-webhook] email failed", e);
+//   }
+// })();
 
   },
 
