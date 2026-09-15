@@ -367,3 +367,10 @@ CREATE INDEX IF NOT EXISTS idx_admins_email ON admins (email);
 CREATE INDEX IF NOT EXISTS idx_airports_iata ON airports (iata_code);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_reference
 ON bookings (booking_reference);
+
+
+SELECT flight_id, seat, COUNT(*)
+FROM booking_passengers
+WHERE seat IS NOT NULL
+GROUP BY flight_id, seat
+HAVING COUNT(*) > 1;

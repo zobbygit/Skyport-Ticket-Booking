@@ -296,11 +296,35 @@ async function assignSeat(
   flightId: string,
   index: number
 ): Promise<string> {
-  const row = Math.floor(index / 6) + 1;
-  const letter = ["A", "B", "C", "D", "E", "F"][index % 6];
-  return `${row}${letter}`;
-}
+  const letters = ["A", "B", "C", "D", "E", "F"];
 
+  // Get every seat already assigned on this flight
+  const result = await client.query(
+    `SELECT seat
+     FROM booking_passengers
+     WHERE flight_id = $1
+       AND seat IS NOT NULL`,
+    [flightId]
+  );
+
+  const occupiedSeats = new Set(
+    result.rows.map((row: { seat: string }) => row.seat)
+  );
+
+  // Find the first available seat
+  for (let row = 1; row <= 100; row++) {
+    for (const letter of letters) {
+      const seat = `${row}${letter}`;
+
+      if (!occupiedSeats.has(seat)) {
+        occupiedSeats.add(seat);
+        return seat;
+      }
+    }
+  }
+
+  throw ApiError.conflict("No seats available on this flight.");
+}
 /* ------------------------------------------------------------------ */
 /* Service                                                             */
 /* ------------------------------------------------------------------ */
@@ -538,6 +562,61 @@ export const bookingsService = {
           [group, seat, p.id]
         );
 
+
+        const usedSeats = new Set<string>();
+
+for (let i = 0; i < passengers.length; i++) {
+  const p = passengers[i];
+  const group = assignBoardingGroup(i);
+
+  let seat = seats?.[i] || p.seat;
+
+  if (seat) {
+    seat = seat.trim().toUpperCase();
+
+    if (usedSeats.has(seat)) {
+      throw ApiError.conflict(
+        `Seat ${seat} is selected for multiple passengers.`
+      );
+    }
+
+    const existingSeat = await client.query(
+      `SELECT 1
+       FROM booking_passengers
+       WHERE flight_id = $1
+         AND seat = $2
+       LIMIT 1`,
+      [booking.flight_id, seat]
+    );
+
+  if ((existingSeat.rowCount ?? 0) > 0) {
+      throw ApiError.conflict(
+        `Seat ${seat} is already occupied on this flight.`
+      );
+    }
+
+    usedSeats.add(seat);
+  } else {
+    seat = await assignSeat(client, booking.flight_id, i);
+    usedSeats.add(seat);
+  }
+
+  await client.query(
+    `UPDATE booking_passengers
+     SET boarding_group = $1,
+         seat = $2,
+         checked_in_at = now()
+     WHERE id = $3`,
+    [group, seat, p.id]
+  );
+
+  await client.query(
+    `INSERT INTO baggage
+       (booking_id, passenger_id, tag_reference, status)
+     VALUES ($1, $2, $3, 'CHECKED_IN')`,
+    [bookingId, p.id, generateBaggageTag()]
+  );
+}
         // One baggage tag per passenger, linked to passenger
         await client.query(
           `INSERT INTO baggage (booking_id, passenger_id, tag_reference, status)
