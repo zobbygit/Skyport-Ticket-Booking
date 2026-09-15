@@ -90,58 +90,96 @@ export const paymentsService = {
    * Confirms the booking, sends the confirmation email + PDF.
    */
   async confirmFromWebhook(paymentIntentId: string) {
-    const paymentRes = await pool.query(
-      "SELECT * FROM payments WHERE stripe_payment_intent_id = $1",
-      [paymentIntentId]
+  const paymentRes = await pool.query(
+    "SELECT * FROM payments WHERE stripe_payment_intent_id = $1",
+    [paymentIntentId]
+  );
+
+  if (!paymentRes.rowCount) return; // unknown intent — ignore
+
+  const payment = paymentRes.rows[0];
+
+  // Only send the confirmation email when this webhook
+  // actually confirms the booking for the first time.
+  let shouldSendConfirmationEmail = false;
+
+  await withTransaction(async (client) => {
+    await client.query(
+      `UPDATE payments
+       SET status = 'succeeded',
+           updated_at = now()
+       WHERE id = $1`,
+      [payment.id]
     );
-    if (!paymentRes.rowCount) return; // unknown intent — ignore
 
-    const payment = paymentRes.rows[0];
-
-    await withTransaction(async (client) => {
-      await client.query(
-        "UPDATE payments SET status = 'succeeded', updated_at = now() WHERE id = $1",
-        [payment.id]
-      );
-      await client.query(
-        "UPDATE bookings SET status = 'CONFIRMED', updated_at = now() WHERE id = $1 AND status = 'PENDING_PAYMENT'",
-        [payment.booking_id]
-      );
-    });
-
-    // Fetch full booking for email
-    const bookingRes = await pool.query(
-      `${BOOKING_WITH_FLIGHT} WHERE b.id = $1`,
+    const bookingUpdate = await client.query(
+      `UPDATE bookings
+       SET status = 'CONFIRMED',
+           confirmed_at = now(),
+           updated_at = now()
+       WHERE id = $1
+         AND status = 'PENDING_PAYMENT'
+       RETURNING id`,
       [payment.booking_id]
     );
-    if (!bookingRes.rowCount) return;
-   const booking = bookingRes.rows[0];
 
-// Load ALL passengers for this booking
-booking.passengers = await getBookingPassengers(booking.id);
+    // If rowCount is 1, this webhook changed the booking
+    // from PENDING_PAYMENT → CONFIRMED.
+    //
+    // If rowCount is 0, the booking was already confirmed,
+    // so this is a duplicate Stripe webhook.
+    shouldSendConfirmationEmail = (bookingUpdate.rowCount ?? 0) > 0;
+  });
 
-const userRes = await pool.query(
-  "SELECT full_name, email FROM users WHERE id = $1",
-  [booking.user_id]
-);
-    const user = userRes.rows[0];
-    if (!user) return;
-
-    auditService.log({
-      actorType: "system",
-      action: "PAYMENT_SUCCEEDED",
-      entityType: "payment",
-      entityId: payment.id,
-      metadata: { bookingId: payment.booking_id, paymentIntentId, amount: payment.amount },
-    });
-
-    notificationsService.create(
-      booking.user_id,
-      "Payment confirmed ✅",
-      `Payment of $${(payment.amount / 100).toFixed(2)} received for ${booking.flight.flight_number}. Ref: ${booking.booking_reference}`,
-      "PAYMENT",
-      booking.flight.id
+  // Prevent duplicate confirmation emails from Stripe webhook retries
+  if (!shouldSendConfirmationEmail) {
+    console.log(
+      `[stripe-webhook] Booking ${payment.booking_id} already confirmed — skipping duplicate email.`
     );
+    return;
+  }
+
+  // Fetch full booking for email
+  const bookingRes = await pool.query(
+    `${BOOKING_WITH_FLIGHT} WHERE b.id = $1`,
+    [payment.booking_id]
+  );
+
+  if (!bookingRes.rowCount) return;
+
+  const booking = bookingRes.rows[0];
+
+  // Load ALL passengers for this booking
+  booking.passengers = await getBookingPassengers(booking.id);
+
+  const userRes = await pool.query(
+    "SELECT full_name, email FROM users WHERE id = $1",
+    [booking.user_id]
+  );
+
+  const user = userRes.rows[0];
+
+  if (!user) return;
+
+  auditService.log({
+    actorType: "system",
+    action: "PAYMENT_SUCCEEDED",
+    entityType: "payment",
+    entityId: payment.id,
+    metadata: {
+      bookingId: payment.booking_id,
+      paymentIntentId,
+      amount: payment.amount,
+    },
+  });
+
+  notificationsService.create(
+    booking.user_id,
+    "Payment confirmed ✅",
+    `Payment of $${(payment.amount / 100).toFixed(2)} received for ${booking.flight.flight_number}. Ref: ${booking.booking_reference}`,
+    "PAYMENT",
+    booking.flight.id
+  );
 
     // Send confirmation email with PDF ticket
 // Send ONE confirmation email containing ONE PDF per passenger

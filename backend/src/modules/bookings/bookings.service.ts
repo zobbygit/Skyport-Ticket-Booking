@@ -209,7 +209,7 @@ import { pool, withTransaction } from "../../config/db";
 import { ApiError } from "../../utils/apiError";
 import { generateBaggageTag, generateBookingReference } from "../../utils/ids";
 import { emailService } from "../../services/email/email.service";
-import { generateTicketPdf } from "../../services/pdf/ticket-pdf.service";
+// import { generateTicketPdf } from "../../services/pdf/ticket-pdf.service";
 import { flightsService } from "../flights/flights.service";
 import { auditService } from "../../services/audit/audit.service";
 import { notificationsService } from "../notifications/notifications.service";
@@ -678,64 +678,64 @@ for (let i = 0; i < passengers.length; i++) {
 
     // Generate ONE email containing one PDF per passenger
     
-void (async () => {
-  try {
-    const userRes = await pool.query(
-      "SELECT full_name, email FROM users WHERE id = $1",
-      [userId]
-    );
+// void (async () => {
+//   try {
+//     const userRes = await pool.query(
+//       "SELECT full_name, email FROM users WHERE id = $1",
+//       [userId]
+//     );
 
-    const user = userRes.rows[0];
+//     const user = userRes.rows[0];
 
-    if (!user?.email) {
-      console.error("[email] No email address found for user:", userId);
-      return;
-    }
+//     if (!user?.email) {
+//       console.error("[email] No email address found for user:", userId);
+//       return;
+//     }
 
-    const f = updated.flight;
-    const boardingPassPdfs: Buffer[] = [];
+//     const f = updated.flight;
+//     const boardingPassPdfs: Buffer[] = [];
 
-    // Generate ONE PDF for EACH passenger
-    for (const p of updated.passengers || []) {
-      const pdf = await generateTicketPdf({
-        passengerName: p.full_name,
-        bookingReference: updated.booking_reference,
-        flightNumber: f.flight_number,
-        originCode: f.origin_airport.iata_code,
-        originCity: f.origin_airport.city,
-        destinationCode: f.destination_airport.iata_code,
-        destinationCity: f.destination_airport.city,
-        departureTime: f.departure_time,
-        gate: f.gate?.code,
-        seat: p.seat,
-        boardingGroup: p.boarding_group,
-        cabinClass: updated.cabin_class,
-      });
+//     // Generate ONE PDF for EACH passenger
+//     for (const p of updated.passengers || []) {
+//       const pdf = await generateTicketPdf({
+//         passengerName: p.full_name,
+//         bookingReference: updated.booking_reference,
+//         flightNumber: f.flight_number,
+//         originCode: f.origin_airport.iata_code,
+//         originCity: f.origin_airport.city,
+//         destinationCode: f.destination_airport.iata_code,
+//         destinationCity: f.destination_airport.city,
+//         departureTime: f.departure_time,
+//         gate: f.gate?.code,
+//         seat: p.seat,
+//         boardingGroup: p.boarding_group,
+//         cabinClass: updated.cabin_class,
+//       });
 
-      boardingPassPdfs.push(pdf);
-    }
+//       boardingPassPdfs.push(pdf);
+//     }
 
-    // ONE email containing ALL passenger PDFs
-    await emailService.sendBoardingPass(
-      user.email,
-      {
-        passengerName: user.full_name,
-        flightNumber: f.flight_number,
-        origin: f.origin_airport.iata_code,
-        destination: f.destination_airport.iata_code,
-        departureTime: new Date(f.departure_time).toUTCString(),
-        bookingReference: updated.booking_reference,
-      },
-      boardingPassPdfs
-    );
+//     // ONE email containing ALL passenger PDFs
+//     await emailService.sendBoardingPass(
+//       user.email,
+//       {
+//         passengerName: user.full_name,
+//         flightNumber: f.flight_number,
+//         origin: f.origin_airport.iata_code,
+//         destination: f.destination_airport.iata_code,
+//         departureTime: new Date(f.departure_time).toUTCString(),
+//         bookingReference: updated.booking_reference,
+//       },
+//       boardingPassPdfs
+//     );
 
-    console.log(
-      `[email] Boarding pass email sent: ${boardingPassPdfs.length} PDF(s) attached`
-    );
-  } catch (e) {
-    console.error("[email] boarding pass email failed", e);
-  }
-})();
+//     console.log(
+//       `[email] Boarding pass email sent: ${boardingPassPdfs.length} PDF(s) attached`
+//     );
+//   } catch (e) {
+//     console.error("[email] boarding pass email failed", e);
+//   }
+// })();
 
     return updated;
   },
