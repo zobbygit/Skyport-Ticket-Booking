@@ -6,6 +6,7 @@ import {
   LogOut,
   Luggage,
   MapPinned,
+  Megaphone,
   Menu,
   Plane,
   User,
@@ -23,6 +24,7 @@ const NAV_LINKS = [
   { to: "/flights", label: "Flights", icon: Plane },
   { to: "/airport-map", label: "Airport Map", icon: MapPinned },
   { to: "/baggage", label: "Baggage", icon: Luggage },
+  { to: "/announcements", label: "Announcements", icon: Megaphone },
 ];
 
 export default function Navbar() {
