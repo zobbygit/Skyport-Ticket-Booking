@@ -185,6 +185,7 @@ CREATE TABLE IF NOT EXISTS booking_passengers (
 );
 CREATE INDEX IF NOT EXISTS idx_booking_passengers_booking ON booking_passengers (booking_id);
 
+
 -- ---------- PAYMENTS ----------
 CREATE TABLE IF NOT EXISTS payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -359,3 +360,10 @@ DO $$ BEGIN
   ALTER TABLE audit_logs
     ADD CONSTRAINT chk_actor_type CHECK (actor_type IN ('admin','user','system'));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
+CREATE INDEX IF NOT EXISTS idx_admins_email ON admins (email);
+CREATE INDEX IF NOT EXISTS idx_airports_iata ON airports (iata_code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_reference
+ON bookings (booking_reference);
