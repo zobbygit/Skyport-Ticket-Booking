@@ -30,6 +30,7 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminAirports from "./pages/admin/AdminAirports";
 import Checkout from "./pages/Checkout";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 function PublicLayout() {
   return (
@@ -74,6 +75,7 @@ export default function App() {
     <Route path="gates" element={<AdminGates />} />
     <Route path="passengers" element={<AdminPassengers />} />
     <Route path="airports" element={<AdminAirports />} />
+    <Route path="notifications" element={<AdminNotifications />} />
 
     {/* SUPER ADMIN ONLY */}
     <Route

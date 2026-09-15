@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" width="100%" height="100%">
+  <defs>
+    <!-- Dark Tech/Modern Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#070a14"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+
+    <!-- Sky Gradient for 'Sky' text & jet trail -->
+    <linearGradient id="sky-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00c6ff"/>
+      <stop offset="100%" stop-color="#0072ff"/>
+    </linearGradient>
+
+    <!-- Port Gradient for 'Port' text -->
+    <linearGradient id="port-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d4e3f5"/>
+    </linearGradient>
+
+    <!-- Accent/Swoosh Dynamic Metallic Gradient -->
+    <linearGradient id="accent-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0072ff" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#00c6ff" stop-opacity="0.3"/>
+      <stop offset="80%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+
+    <!-- Glow Filter for Cyber/Modern Aesthetic -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft Ambient Glow -->
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="15" result="blur"/>
+    </filter>
+  </defs>
+
+  <!-- Deep Dynamic Background -->
+  <rect width="100%" height="100%" fill="url(#bg-grad)"/>
+
+  <!-- Subtle UI Grid Lines (Aviation Radar / Map Vibe) -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="75" x2="800" y2="75"/>
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="225" x2="800" y2="225"/>
+    <line x1="200" y1="0" x2="200" y2="300"/>
+    <line x1="400" y1="0" x2="400" y2="300"/>
+    <line x1="600" y1="0" x2="600" y2="300"/>
+  </g>
+
+  <!-- Main Flight Path Atmosphere Ambient Glow -->
+  <path d="M 120 205 C 240 205, 300 160, 420 105 C 470 82, 510 70, 560 68" 
+        fill="none" 
+        stroke="#00c6ff" 
+        stroke-width="24" 
+        opacity="0.15"
+        filter="url(#soft-glow)"/>
+
+  <!-- SkyPort Main Logo Group -->
+  <g transform="translate(45, 10)">
+    
+    <!-- Dynamic Soaring Jet Path (Integrated with Typography) -->
+    <!-- Lower Trail -->
+    <path d="M 115 198 C 220 198, 310 150, 410 102 C 455 80, 490 73, 525 73" 
+          fill="none" 
+          stroke="url(#sky-grad)" 
+          stroke-width="3" 
+          stroke-linecap="round"
+          opacity="0.4"/>
+          
+    <!-- Main Swooping Flight Trail -->
+    <path d="M 135 198 C 240 198, 325 145, 425 96 C 470 74, 512 68, 555 68" 
+          fill="none" 
+          stroke="url(#accent-grad)" 
+          stroke-width="6" 
+          stroke-linecap="round"
+          filter="url(#glow)"/>
+
+    <!-- Minimalist Jetliner Icon -->
+    <g transform="translate(552, 68) rotate(-8) scale(0.95)" filter="url(#glow)">
+      <!-- Airplane Wings and Body (Negative Space Geometric Style) -->
+      <path d="M 0 0 L -18 -10 L -10 -2 L -28 -4 L -22 0 L -28 4 L -10 2 L -18 10 Z" fill="#ffffff"/>
+      <!-- Jet Nose Point -->
+      <polygon points="0,-1 5,0 0,1" fill="#00f2fe"/>
+    </g>
+
+    <!-- App / Airport Location Portal Ring (Symbolizing "Port") -->
+    <g transform="translate(628, 142)">
+      <!-- Outer Accent Ring -->
+      <circle cx="0" cy="0" r="16" fill="none" stroke="url(#sky-grad)" stroke-width="2.5" opacity="0.6" stroke-dasharray="60 15"/>
+      <!-- Inner Core Dot -->
+      <circle cx="0" cy="0" r="5" fill="#00f2fe" filter="url(#glow)"/>
+      <!-- Orbit Glow -->
+      <circle cx="0" cy="0" r="22" fill="none" stroke="#00c6ff" stroke-width="1" opacity="0.2"/>
+    </g>
+
+    <!-- WORDMARK TEXT SECTION -->
+    <g id="wordmark" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+      
+      <!-- "SKY" - Bold, Italicized/Slanted, Modern Tech Aesthetic -->
+      <text x="140" y="175" 
+            font-size="92" 
+            font-weight="900" 
+            font-style="italic"
+            letter-spacing="1.5"
+            fill="url(#sky-grad)">SKY</text>
+
+      <!-- "PORT" - Clean, Sleek, Geometric Contrast -->
+      <text x="348" y="175" 
+            font-size="92" 
+            font-weight="300" 
+            font-style="italic"
+            letter-spacing="4"
+            fill="url(#port-grad)">PORT</text>
+
+      <!-- Tagline / Subtext -->
+      <text x="352" y="212" 
+            font-size="13" 
+            font-weight="600" 
+            letter-spacing="9.5" 
+            fill="#6b82a8" 
+            opacity="0.9">FLIGHT BOOKING</text>
+
+      <!-- Modern Location Dot Grid under Subtext -->
+      <g fill="#00c6ff" opacity="0.5" transform="translate(142, 207)">
+        <circle cx="0" cy="0" r="1.5"/>
+        <circle cx="10" cy="0" r="1.5"/>
+        <circle cx="20" cy="0" r="1.5"/>
+        <circle cx="30" cy="0" r="1.5"/>
+        <circle cx="40" cy="0" r="1.5"/>
+        <circle cx="50" cy="0" r="1.5"/>
+        <line x1="60" y1="0" x2="185" y2="0" stroke="#00c6ff" stroke-width="1" opacity="0.3"/>
+      </g>
+    </g>
+
+  </g>
+</svg>

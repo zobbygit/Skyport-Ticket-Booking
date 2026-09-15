@@ -22,4 +22,18 @@ export const announcementsService = {
     realtime.announcementCreated(data.airportId || null, announcement);
     return announcement;
   },
+
+  async remove(id: string) {
+  const result = await pool.query(
+    `DELETE FROM announcements
+     WHERE id = $1
+     RETURNING *`,
+    [id]
+  );
+
+  return result.rows[0] || null;
+},
+
+
 };
+
