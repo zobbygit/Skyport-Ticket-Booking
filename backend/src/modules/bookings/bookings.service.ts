@@ -531,19 +531,13 @@ export const bookingsService = {
           seats?.[i] || p.seat || (await assignSeat(client, booking.flight_id, i));
 
         // Update passenger with seat + group
-   try {
-  await client.query(
-    `UPDATE booking_passengers
-     SET boarding_group = $1, seat = $2, checked_in_at = now()
-     WHERE id = $3`,
-    [group, seat, p.id]
-  );
-} catch (e: any) {
-  if (e.code === "23505") {
-    throw ApiError.conflict(`Seat ${seat} is already taken on this flight.`);
-  }
-  throw e;
-}
+        await client.query(
+          `UPDATE booking_passengers
+           SET boarding_group = $1, seat = $2, checked_in_at = now()
+           WHERE id = $3`,
+          [group, seat, p.id]
+        );
+
         // One baggage tag per passenger, linked to passenger
         await client.query(
           `INSERT INTO baggage (booking_id, passenger_id, tag_reference, status)
