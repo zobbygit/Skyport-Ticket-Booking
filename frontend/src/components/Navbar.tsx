@@ -160,15 +160,17 @@ const { data: profile } = useQuery
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-0.5 rounded-full border border-slate-200/70 bg-slate-100/60 p-1 backdrop-blur-md dark:border-slate-800/70 dark:bg-slate-900/50 md:flex">
-            {NAV_LINKS.map((link) => (
-              <NavLink key={link.to} to={link.to} className={linkClass}>
-                <link.icon
-                  size={14}
-                  className="transition-transform duration-300 group-hover:scale-110"
-                />
-                {link.label}
-              </NavLink>
-            ))}
+       {NAV_LINKS
+  .filter((link) => link.to !== "/announcements" || isAuthenticated)
+  .map((link) => (
+    <NavLink key={link.to} to={link.to} className={linkClass}>
+      <link.icon
+        size={14}
+        className="transition-transform duration-300 group-hover:scale-110"
+      />
+      {link.label}
+    </NavLink>
+  ))}
             {isAuthenticated && (
               <NavLink to="/dashboard" className={linkClass}>
                 <LayoutDashboard
@@ -291,17 +293,19 @@ const { data: profile } = useQuery
           aria-hidden={!mobileOpen}
         >
           <nav className="flex flex-col gap-1 px-4 py-3">
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className={mobileLinkClass}
-              >
-                <link.icon size={16} />
-                {link.label}
-              </NavLink>
-            ))}
+     {NAV_LINKS
+  .filter((link) => link.to !== "/announcements" || isAuthenticated)
+  .map((link) => (
+    <NavLink
+      key={link.to}
+      to={link.to}
+      onClick={() => setMobileOpen(false)}
+      className={mobileLinkClass}
+    >
+      <link.icon size={16} />
+      {link.label}
+    </NavLink>
+  ))}
             {isAuthenticated && (
               <NavLink
                 to="/dashboard"
