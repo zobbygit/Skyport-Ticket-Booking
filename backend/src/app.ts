@@ -18,7 +18,9 @@ import gateRoutes from "./modules/gates/gates.routes";
 import announcementRoutes from "./modules/announcements/announcements.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import paymentsRoutes from "./modules/payments/payments.routes";
-
+import pricingRoutes from "./modules/pricing/pricing.routes";
+import addonsRoutes from "./modules/addons/addons.routes";
+import weatherRoutes from"./modules/weather/weather.routes"
 const app = express();
 
 const allowedOrigins = [
@@ -59,6 +61,9 @@ app.use("/api/gates", gateRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentsRoutes);
+app.use("/api/pricing", pricingRoutes);
+app.use("/api/addons", addonsRoutes);
+app.use("/api/weather", weatherRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

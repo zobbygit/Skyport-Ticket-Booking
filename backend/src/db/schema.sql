@@ -171,7 +171,19 @@ CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings (user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_flight ON bookings (flight_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_reference ON bookings (booking_reference);
 
-
+-- ---------- BOOKING PASSENGERS ----------
+CREATE TABLE IF NOT EXISTS booking_passengers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  full_name VARCHAR(150) NOT NULL,
+  passport_number VARCHAR(30),
+  date_of_birth DATE,
+  seat VARCHAR(10),
+  boarding_group VARCHAR(5),
+  checked_in_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_booking_passengers_booking ON booking_passengers (booking_id);
 
 -- ---------- PAYMENTS ----------
 CREATE TABLE IF NOT EXISTS payments (
@@ -291,3 +303,59 @@ ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS actor_type VARCHAR(20) NOT NULL 
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs (actor_admin_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_user ON audit_logs (actor_user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs (created_at DESC);
+
+-- ---------- BOOKING ADD-ONS ----------
+CREATE TABLE IF NOT EXISTS booking_addons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  type VARCHAR(40) NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  price_usd NUMERIC(10,2) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_booking_addons_booking ON booking_addons (booking_id);
+
+
+-- ============================================================
+-- SkyPort — Migration to match bookings.service.ts v2
+-- ============================================================
+
+-- 1. bookings.confirmed_at
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMPTZ;
+
+-- 2. bookings.status default
+ALTER TABLE bookings ALTER COLUMN status SET DEFAULT 'PENDING_PAYMENT';
+
+-- 3. baggage.passenger_id
+ALTER TABLE baggage
+  ADD COLUMN IF NOT EXISTS passenger_id UUID
+  REFERENCES booking_passengers(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_baggage_passenger ON baggage (passenger_id);
+
+-- 4. booking_passengers.flight_id (denormalized for seat uniqueness)
+ALTER TABLE booking_passengers
+  ADD COLUMN IF NOT EXISTS flight_id UUID REFERENCES flights(id);
+CREATE INDEX IF NOT EXISTS idx_booking_passengers_flight
+  ON booking_passengers (flight_id);
+
+-- Backfill flight_id from bookings
+UPDATE booking_passengers bp
+SET flight_id = b.flight_id
+FROM bookings b
+WHERE bp.booking_id = b.id AND bp.flight_id IS NULL;
+
+-- 5. Unique seat per flight
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_passenger_seat_per_flight
+  ON booking_passengers (flight_id, seat)
+  WHERE seat IS NOT NULL;
+
+-- 6. Optional: add NO_SHOW to booking_status
+DO $$ BEGIN
+  ALTER TYPE booking_status ADD VALUE IF NOT EXISTS 'NO_SHOW';
+EXCEPTION WHEN others THEN NULL; END $$;
+
+-- 7. Optional: constrain audit actor_type
+DO $$ BEGIN
+  ALTER TABLE audit_logs
+    ADD CONSTRAINT chk_actor_type CHECK (actor_type IN ('admin','user','system'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

@@ -5,6 +5,7 @@ import L from "leaflet";
 import { api } from "../lib/api";
 import { Airport } from "../types";
 import Reveal from "../components/Reveal";
+import WeatherWidget from "../components/WeatherWidget";
 import {
   Coffee, DoorOpen, Globe2, Info, Luggage, MapPinned, ShieldCheck,
   ShoppingBag, TicketCheck, Train, Wine,
@@ -73,39 +74,10 @@ export default function AirportMap() {
             <MapPinned size={14} /> Terminal navigation
           </p>
           <h1 className="relative mt-1 text-2xl font-extrabold sm:text-3xl">Interactive airport map</h1>
-
-
-          
-<select
-  className="input relative mt-5 max-w-xs bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-  value={airportId}
-  onChange={(e) => {
-    setAirportId(e.target.value);
-    setSelected(null);
-  }}
->
-  <option
-    value=""
-    className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-  >
-    Select an airport
-  </option>
-
-  {airports?.map((a) => (
-    <option
-      key={a.id}
-      value={a.id}
-      className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-    >
-      {a.name} ({a.iata_code})
-    </option>
-  ))}
-</select>
-
-
-
-
-
+          <select className="input relative mt-5 max-w-xs text-slate-900 dark:text-white" value={airportId} onChange={(e) => { setAirportId(e.target.value); setSelected(null); }}>
+            <option value="">Select an airport</option>
+            {airports?.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.iata_code})</option>)}
+          </select>
         </div>
       </Reveal>
 
@@ -141,6 +113,9 @@ export default function AirportMap() {
                   </Popup>
                 </Marker>
               </MapContainer>
+            </div>
+            <div className="mt-3">
+              <WeatherWidget city={activeAirport.city} iata={activeAirport.iata_code} />
             </div>
           </div>
         </Reveal>

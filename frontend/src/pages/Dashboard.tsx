@@ -73,6 +73,17 @@ export default function Dashboard() {
     }
   }
 
+  async function handleRefund(id: string) {
+    if (!confirm("Request a refund? This will cancel your booking and refund your payment. Allow 5-10 business days.")) return;
+    try {
+      await api.post(`/payments/booking/${id}/refund`);
+      toast.success("Refund initiated. Your booking has been cancelled.");
+      qc.invalidateQueries({ queryKey: ["bookings"] });
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Could not process refund. If you paid, contact support."));
+    }
+  }
+
   return (
     <div>
       {/* Hero */}
@@ -217,12 +228,21 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2 sm:shrink-0">
                 {b.status === "PENDING_PAYMENT" && (
-                  <Link to={`/checkout/${b.id}`} className="btn-primary text-sm animate-pulse">
+                  <Link to={`/checkout/${b.id}`} className="btn-primary text-sm">
                     💳 Complete payment
                   </Link>
                 )}
                 {b.status === "CONFIRMED" && (
-                  <button onClick={() => handleCheckIn(b.id)} className="btn-secondary text-sm">Check in</button>
+                  <>
+                    <button onClick={() => handleCheckIn(b.id)} className="btn-secondary text-sm">Check in</button>
+                    <button
+                      onClick={() => handleRefund(b.id)}
+                      className="btn-secondary text-sm text-red-500"
+                      title="Request refund & cancel"
+                    >
+                      Refund
+                    </button>
+                  </>
                 )}
                 {b.status === "CHECKED_IN" && (
                   <Link to={`/boarding-pass/${b.id}`} className="btn-primary text-sm"><QrCode size={16} /> Boarding pass</Link>
