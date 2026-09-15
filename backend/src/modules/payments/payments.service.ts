@@ -32,6 +32,19 @@ const BOOKING_WITH_FLIGHT = `
   LEFT JOIN gates g ON g.id = f.gate_id
 `;
 
+
+async function getBookingPassengers(bookingId: string) {
+  const res = await pool.query(
+    `SELECT *
+     FROM booking_passengers
+     WHERE booking_id = $1
+     ORDER BY created_at`,
+    [bookingId]
+  );
+
+  return res.rows;
+}
+
 export const paymentsService = {
   /**
    * Creates a Stripe PaymentIntent for a PENDING_PAYMENT booking.
@@ -102,9 +115,15 @@ export const paymentsService = {
       [payment.booking_id]
     );
     if (!bookingRes.rowCount) return;
-    const booking = bookingRes.rows[0];
+   const booking = bookingRes.rows[0];
 
-    const userRes = await pool.query("SELECT full_name, email FROM users WHERE id = $1", [booking.user_id]);
+// Load ALL passengers for this booking
+booking.passengers = await getBookingPassengers(booking.id);
+
+const userRes = await pool.query(
+  "SELECT full_name, email FROM users WHERE id = $1",
+  [booking.user_id]
+);
     const user = userRes.rows[0];
     if (!user) return;
 
@@ -131,7 +150,7 @@ export const paymentsService = {
     const passengers = booking.passengers || [];
     const boardingPassPdfs: Buffer[] = [];
 
-    // Generate one PDF for each passenger
+    // Generate one PDF for EACH passenger
     for (const passenger of passengers) {
       const pdf = await generateTicketPdf({
         passengerName: passenger.full_name,

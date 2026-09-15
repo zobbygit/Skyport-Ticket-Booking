@@ -677,6 +677,7 @@ for (let i = 0; i < passengers.length; i++) {
     }
 
     // Generate ONE email containing one PDF per passenger
+    
 void (async () => {
   try {
     const userRes = await pool.query(
