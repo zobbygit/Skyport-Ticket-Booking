@@ -35,6 +35,7 @@ export default function FlightSearch() {
       if (destination) query.set("destination", destination);
       if (date) query.set("date", date);
       return (await api.get<{ data: Flight[] }>(`/flights?${query.toString()}`)).data.data;
+      
     },
   });
 

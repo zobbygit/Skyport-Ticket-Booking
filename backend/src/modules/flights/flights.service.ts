@@ -29,35 +29,43 @@ const FLIGHT_SELECT = `
 
 export const flightsService = {
   async search(params: FlightSearchParams) {
-    const page = params.page || 1;
-    const pageSize = Math.min(params.pageSize || 20, 50);
-    const conditions: string[] = [];
-    const values: any[] = [];
+  const conditions: string[] = [];
+  const values: any[] = [];
 
-    if (params.origin) {
-      values.push(params.origin.toUpperCase());
-      conditions.push(`oa.iata_code = $${values.length}`);
-    }
-    if (params.destination) {
-      values.push(params.destination.toUpperCase());
-      conditions.push(`da.iata_code = $${values.length}`);
-    }
-    if (params.date) {
-      values.push(params.date);
-      conditions.push(`f.departure_time::date = $${values.length}::date`);
-    }
-    if (params.airline) {
-      values.push(`%${params.airline}%`);
-      conditions.push(`f.airline ILIKE $${values.length}`);
-    }
+  if (params.origin) {
+    values.push(params.origin.toUpperCase());
+    conditions.push(`oa.iata_code = $${values.length}`);
+  }
 
-    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-    values.push(pageSize, (page - 1) * pageSize);
+  if (params.destination) {
+    values.push(params.destination.toUpperCase());
+    conditions.push(`da.iata_code = $${values.length}`);
+  }
 
-    const sql = `${FLIGHT_SELECT} ${where} ORDER BY f.departure_time ASC LIMIT $${values.length - 1} OFFSET $${values.length}`;
-    const result = await pool.query(sql, values);
-    return result.rows;
-  },
+  if (params.date) {
+    values.push(params.date);
+    conditions.push(`f.departure_time::date = $${values.length}::date`);
+  }
+
+  if (params.airline) {
+    values.push(`%${params.airline}%`);
+    conditions.push(`f.airline ILIKE $${values.length}`);
+  }
+
+  const where = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
+
+  const sql = `
+    ${FLIGHT_SELECT}
+    ${where}
+    ORDER BY f.departure_time ASC
+  `;
+
+  const result = await pool.query(sql, values);
+
+  return result.rows;
+},
 
   async getById(id: string) {
     const cacheKey = `flight:${id}`;
