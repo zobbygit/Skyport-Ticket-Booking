@@ -1,6 +1,8 @@
 <div align="center">
 
 # ✈️ SkyPort — Airport Management Platform
+<img width="1900" height="926" alt="image" src="https://github.com/user-attachments/assets/3a08fb85-cc7c-4d1b-bc6e-06d13511c3fb" />
+
 
 **A full-stack, production-ready airport operations and passenger experience platform.**
 
@@ -414,6 +416,10 @@ STRIPE_CURRENCY=usd
 # ── Rate limiting ───────────────────────────────────────
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=300
+
+# ── Weather Live Updates ───────────────────────────────────────
+VITE_WEATHER_API_KEY=your_weatherapi_key    # weatherapi.com — free tier
+
 ```
 
 > **Tip:** Email logs to console in dev if SMTP vars are blank — app works fully offline without them.
@@ -424,7 +430,6 @@ RATE_LIMIT_MAX=300
 VITE_API_URL=http://localhost:4000/api
 VITE_SOCKET_URL=http://localhost:4000
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxx
-VITE_WEATHER_API_KEY=your_weatherapi_key    # weatherapi.com — free tier
 ```
 
 ---
