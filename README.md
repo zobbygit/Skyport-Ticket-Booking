@@ -312,6 +312,8 @@ skyport/
 
 ---
 
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -323,7 +325,7 @@ skyport/
 ### 1. Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/skyport.git
+git clone https://github.com/zobbygit/Skyport-Ticket-Booking
 cd skyport
 ```
 
