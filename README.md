@@ -401,11 +401,8 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# ── Brevo SMTP (transactional email) ────────────────────
-BREVO_SMTP_HOST=smtp-relay.brevo.com
-BREVO_SMTP_PORT=587
-BREVO_SMTP_USER=your_brevo_login@email.com   # Brevo account email
-BREVO_SMTP_PASSWORD=xsmtpsib-xxxxxxxxxxxx    # Brevo SMTP key (NOT account password)
+# ── Brevo API Keys (transactional email) ────────────────────
+BREVO_API_KEY=your-brevo-api-key
 BREVO_FROM_EMAIL=no-reply@yourdomain.com
 BREVO_FROM_NAME=SkyPort
 
