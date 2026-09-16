@@ -111,115 +111,204 @@
 
 ```
 skyport/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   ├── db.ts              # PostgreSQL pool + transaction helper
-│   │   │   └── env.ts             # Typed env vars
-│   │   ├── db/
-│   │   │   ├── schema.sql         # Full idempotent schema
-│   │   │   ├── migrate.ts         # Run schema.sql against DB
-│   │   │   └── seed.ts            # 13 airports, 43 flights, map points
-│   │   ├── middleware/
-│   │   │   ├── auth.ts            # JWT extraction + audience check
-│   │   │   ├── rbac.ts            # requireAdminRole(...roles)
-│   │   │   ├── errorHandler.ts    # Global error + 404 handlers
-│   │   │   └── rateLimiter.ts     # Global + strict limiters
-│   │   ├── modules/
-│   │   │   ├── auth/              # register, login (passenger+admin), refresh, logout
-│   │   │   ├── users/             # profile, avatar, saved items
-│   │   │   ├── flights/           # search, CRUD, status/gate updates
-│   │   │   ├── bookings/          # create, check-in, cancel, multi-passenger
-│   │   │   ├── payments/          # Stripe payment intents + webhook
-│   │   │   ├── baggage/           # track, report, admin status update
-│   │   │   ├── notifications/     # passenger + admin notifications
-│   │   │   ├── airports/          # list, terminals, map points, admin CRUD
-│   │   │   ├── gates/             # list, create, status update
-│   │   │   ├── announcements/     # list, create (admin)
-│   │   │   ├── pricing/           # currency list + USD conversion
-│   │   │   ├── addons/            # catalog, add/remove booking extras
-│   │   │   └── admin/             # dashboard stats, analytics, passengers, admins, audit log
-│   │   ├── services/
-│   │   │   ├── audit/             # Central audit logger (fire-and-forget)
-│   │   │   ├── cache/             # In-memory TTL cache (Redis-shaped interface)
-│   │   │   ├── cloudinary/        # Avatar upload pipeline
-│   │   │   ├── email/             # Nodemailer/Brevo + HTML templates
-│   │   │   ├── pdf/               # PDFKit boarding pass generator
-│   │   │   ├── socket/            # Socket.IO init + realtime emit helpers
-│   │   │   └── stripe/            # Stripe SDK wrapper
-│   │   ├── utils/
-│   │   │   ├── apiError.ts        # Typed HTTP error class
-│   │   │   ├── asyncHandler.ts    # Async route wrapper
-│   │   │   ├── ids.ts             # Booking ref + baggage tag generators
-│   │   │   ├── jwt.ts             # Sign + verify access/refresh tokens
-│   │   │   └── password.ts        # Bcrypt hash + compare
-│   │   ├── __tests__/             # Jest + Supertest integration tests
-│   │   ├── app.ts                 # Express app setup
-│   │   └── server.ts              # HTTP + Socket.IO server
-│   ├── .env.example
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── AdminLayout.tsx     # Admin sidebar + header
-    │   │   ├── CurrencySelector.tsx
-    │   │   ├── ErrorState.tsx
-    │   │   ├── FlightCard.tsx
-    │   │   ├── Footer.tsx          # Premium 4-column footer
-    │   │   ├── LoadingSpinner.tsx
-    │   │   ├── Navbar.tsx          # Glass navbar with mobile menu
-    │   │   ├── ProtectedRoute.tsx  # Passenger + admin route guards
-    │   │   ├── Reveal.tsx          # Scroll-reveal IntersectionObserver wrapper
-    │   │   ├── StatusBadge.tsx     # Color-coded flight/booking status pill
-    │   │   ├── ThemeToggle.tsx
-    │   │   └── WeatherWidget.tsx   # WeatherAPI.com live widget
-    │   ├── hooks/
-    │   │   └── usePrice.ts        # Currency-aware price formatter
-    │   ├── lib/
-    │   │   ├── api.ts             # Axios instance + interceptors
-    │   │   ├── queryClient.ts     # TanStack Query client config
-    │   │   └── socket.ts          # Socket.IO client init + helpers
-    │   ├── pages/
-    │   │   ├── Home.tsx           # Landing page with hero, destinations, FAQ
-    │   │   ├── Login.tsx          # Split-screen login
-    │   │   ├── Register.tsx       # Register with password strength meter
-    │   │   ├── FlightSearch.tsx   # Search results with sort + filter
-    │   │   ├── FlightDetails.tsx  # Flight detail + multi-passenger booking form
-    │   │   ├── Checkout.tsx       # Stripe Elements checkout + add-ons
-    │   │   ├── Dashboard.tsx      # Passenger trip overview with check-in/refund
-    │   │   ├── BoardingPass.tsx   # QR boarding pass (multi-passenger)
-    │   │   ├── Baggage.tsx        # Tag tracker + policy reference
-    │   │   ├── AirportMap.tsx     # Leaflet world map + SVG indoor map
-    │   │   ├── Notifications.tsx  # Passenger notification center
-    │   │   ├── Profile.tsx        # Profile + avatar upload
-    │   │   └── admin/
-    │   │       ├── AdminLogin.tsx
-    │   │       ├── AdminDashboard.tsx
-    │   │       ├── AdminAnalytics.tsx  # Recharts: bookings, revenue, routes
-    │   │       ├── AdminFlights.tsx    # Flight CRUD + status updates
-    │   │       ├── AdminAirports.tsx   # Step-by-step airport builder
-    │   │       ├── AdminGates.tsx      # Gate status management
-    │   │       ├── AdminPassengers.tsx
-    │   │       ├── AdminAdmins.tsx
-    │   │       ├── AdminAuditLog.tsx   # Filterable log + PDF/JSON export
-    │   │       └── AdminAnnouncements.tsx
-    │   ├── store/
-    │   │   ├── authStore.ts       # Zustand auth state + hydration
-    │   │   ├── currencyStore.ts   # Selected currency + rate
-    │   │   └── themeStore.ts      # Dark/light theme with localStorage persist
-    │   ├── types/
-    │   │   └── index.ts           # Shared TypeScript interfaces
-    │   ├── __tests__/             # Vitest unit tests
-    │   ├── App.tsx                # Route definitions
-    │   ├── main.tsx               # Entry point
-    │   └── styles/index.css       # Tailwind + CSS variable theme system
-    ├── .env.example
-    ├── package.json
-    ├── tailwind.config.js
-    └── vite.config.ts
-```
+├── 📁 backend
+│   ├── 📁 src
+│   │   ├── 📁 __tests__                          # Jest + Supertest integration tests
+│   │   │   ├── 📄 auth.test.ts                   # Register / login / refresh / logout flows
+│   │   │   ├── 📄 flights.test.ts                # Flight search + admin CRUD tests
+│   │   │   └── 📄 pricing.test.ts                # Currency list + USD conversion tests
+│   │   ├── 📁 config
+│   │   │   ├── 📄 db.ts                          # PostgreSQL pool + transaction helper
+│   │   │   └── 📄 env.ts                         # Typed env vars
+│   │   ├── 📁 db
+│   │   │   ├── 📄 migrate.ts                     # Run schema.sql against DB
+│   │   │   ├── 📄 schema.sql                     # Full idempotent schema
+│   │   │   └── 📄 seed.ts                        # 13 airports, 43 flights, map points
+│   │   ├── 📁 middleware
+│   │   │   ├── 📄 auth.ts                        # JWT extraction + audience check
+│   │   │   ├── 📄 errorHandler.ts                # Global error + 404 handlers
+│   │   │   ├── 📄 rateLimiter.ts                 # Global + strict limiters
+│   │   │   └── 📄 rbac.ts                        # requireAdminRole(...roles)
+│   │   ├── 📁 modules
+│   │   │   ├── 📁 addons                         # Booking extras catalog
+│   │   │   │   ├── 📄 addons.controller.ts       # Add/remove booking extras handlers
+│   │   │   │   ├── 📄 addons.routes.ts           # Addons endpoints
+│   │   │   │   └── 📄 addons.service.ts          # Catalog + attach/detach logic
+│   │   │   ├── 📁 admin                          # Admin back-office
+│   │   │   │   ├── 📄 admin.controller.ts        # Dashboard stats, analytics, passengers, admins
+│   │   │   │   ├── 📄 admin.routes.ts            # Admin-only endpoints
+│   │   │   │   └── 📄 admin.service.ts           # Admin business logic + audit log queries
+│   │   │   ├── 📁 airports                       # Airport domain
+│   │   │   │   ├── 📄 airports.controller.ts     # List, terminals, map points, admin CRUD
+│   │   │   │   ├── 📄 airports.routes.ts         # Airport endpoints
+│   │   │   │   └── 📄 airports.service.ts        # Airport/terminal business logic
+│   │   │   ├── 📁 announcements                  # Public announcements
+│   │   │   │   ├── 📄 announcements.controller.ts # List (public) + create (admin)
+│   │   │   │   ├── 📄 announcements.routes.ts    # Announcement endpoints
+│   │   │   │   └── 📄 announcements.service.ts   # Announcement logic
+│   │   │   ├── 📁 auth                           # Authentication domain
+│   │   │   │   ├── 📄 auth.controller.ts         # Register, login (passenger+admin), refresh, logout
+│   │   │   │   ├── 📄 auth.routes.ts             # Auth endpoints
+│   │   │   │   ├── 📄 auth.service.ts            # Auth business logic + token issuance
+│   │   │   │   └── 📄 auth.validators.ts         # Request body validation schemas
+│   │   │   ├── 📁 baggage                        # Baggage tracking
+│   │   │   │   ├── 📄 baggage.controller.ts      # Track, report, admin status update
+│   │   │   │   ├── 📄 baggage.routes.ts          # Baggage endpoints
+│   │   │   │   └── 📄 baggage.service.ts         # Baggage business logic
+│   │   │   ├── 📁 bookings                       # Booking domain
+│   │   │   │   ├── 📄 bookings.controller.ts     # Create, check-in, cancel, multi-passenger
+│   │   │   │   ├── 📄 bookings.routes.ts         # Booking endpoints
+│   │   │   │   └── 📄 bookings.service.ts        # Booking business logic + transactions
+│   │   │   ├── 📁 flights                        # Flight domain
+│   │   │   │   ├── 📄 flights.controller.ts      # Search, CRUD, status/gate updates
+│   │   │   │   ├── 📄 flights.routes.ts          # Flight endpoints
+│   │   │   │   └── 📄 flights.service.ts         # Flight business logic + search filters
+│   │   │   ├── 📁 gates                          # Gate management
+│   │   │   │   ├── 📄 gates.controller.ts        # List, create, status update
+│   │   │   │   ├── 📄 gates.routes.ts            # Gate endpoints
+│   │   │   │   └── 📄 gates.service.ts           # Gate business logic
+│   │   │   ├── 📁 map                            # Map points for Leaflet world map
+│   │   │   ├── 📁 notifications                  # Notifications domain
+│   │   │   │   ├── 📄 notifications.controller.ts # Passenger + admin notifications
+│   │   │   │   ├── 📄 notifications.routes.ts    # Notification endpoints
+│   │   │   │   └── 📄 notifications.service.ts   # Notification business logic
+│   │   │   ├── 📁 payments                       # Payments domain
+│   │   │   │   ├── 📄 payments.controller.ts     # Stripe payment intents + webhook
+│   │   │   │   ├── 📄 payments.routes.ts         # Payment endpoints
+│   │   │   │   └── 📄 payments.service.ts        # Payment business logic
+│   │   │   ├── 📁 pricing                        # Currency & pricing domain
+│   │   │   │   ├── 📄 pricing.controller.ts      # Currency list + USD conversion
+│   │   │   │   └── 📄 pricing.routes.ts          # Pricing endpoints
+│   │   │   ├── 📁 users                          # User domain
+│   │   │   │   ├── 📄 users.controller.ts        # Profile, avatar, saved items
+│   │   │   │   ├── 📄 users.routes.ts            # User endpoints
+│   │   │   │   └── 📄 users.service.ts           # User business logic
+│   │   │   └── 📁 weather                        # Weather proxy (WeatherAPI.com)
+│   │   │       ├── 📄 weather.controller.ts      # Weather fetch handler
+│   │   │       └── 📄 weather.routes.ts          # Weather endpoints
+│   │   ├── 📁 services
+│   │   │   ├── 📁 audit
+│   │   │   │   └── 📄 audit.service.ts           # Central audit logger (fire-and-forget)
+│   │   │   ├── 📁 cloudinary
+│   │   │   │   └── 📄 cloudinary.service.ts      # Avatar upload pipeline
+│   │   │   ├── 📁 email
+│   │   │   │   ├── 📄 email.service.ts           # Nodemailer/Brevo transport
+│   │   │   │   └── 📄 email.templates.ts         # HTML email templates
+│   │   │   ├── 📁 pdf
+│   │   │   │   └── 📄 ticket-pdf.service.ts      # PDFKit boarding pass generator
+│   │   │   ├── 📁 socket
+│   │   │   │   ├── 📄 socket.service.ts          # Realtime emit helpers
+│   │   │   │   └── 📄 socket.ts                  # Socket.IO init
+│   │   │   └── 📁 stripe
+│   │   │       └── 📄 stripe.service.ts          # Stripe SDK wrapper
+│   │   ├── 📁 types
+│   │   │   └── 📄 express.d.ts                   # Augment Express Request with `user`, etc.
+│   │   ├── 📁 utils
+│   │   │   ├── 📄 apiError.ts                    # Typed HTTP error class
+│   │   │   ├── 📄 asyncHandler.ts                # Async route wrapper
+│   │   │   ├── 📄 format.ts                      # Date/number formatting helpers
+│   │   │   ├── 📄 ids.ts                         # Booking ref + baggage tag generators
+│   │   │   ├── 📄 jwt.ts                         # Sign + verify access/refresh tokens
+│   │   │   ├── 📄 password.ts                    # Bcrypt hash + compare
+│   │   │   └── 📄 reference.ts                   # Human-readable reference generator
+│   │   ├── 📄 app.ts                             # Express app setup
+│   │   ├── 📄 routes.ts                          # Root router mounting all modules
+│   │   └── 📄 server.ts                          # HTTP + Socket.IO server
+│   ├── ⚙️ .gitignore
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   └── ⚙️ tsconfig.json
+├── 📁 frontend
+│   ├── 📁 public
+│   │   ├── 🖼️ airplane.svg                       # Decorative airplane asset
+│   │   ├── 🖼️ logo.svg                           # Brand logo
+│   │   ├── 🖼️ sky.svg                            # Hero background variant 1
+│   │   ├── 🖼️ sky2.svg                           # Hero background variant 2
+│   │   ├── 🖼️ sky3.svg                           # Hero background variant 3
+│   │   └── 🖼️ sky4.svg                           # Hero background variant 4
+│   ├── 📁 src
+│   │   ├── 📁 __tests__
+│   │   │   ├── 📄 statusBadge.test.tsx           # StatusBadge unit tests
+│   │   │   └── 📄 utils.test.ts                  # Frontend util tests
+│   │   ├── 📁 components
+│   │   │   ├── 📁 ui                             # Base design-system primitives
+│   │   │   │   ├── 📄 Badge.tsx                  # Generic badge primitive
+│   │   │   │   ├── 📄 Button.tsx                 # Reusable button
+│   │   │   │   ├── 📄 Card.tsx                   # Reusable card container
+│   │   │   │   ├── 📄 Input.tsx                  # Reusable text input
+│   │   │   │   └── 📄 Skeleton.tsx               # Loading skeleton
+│   │   │   ├── 📄 AdminLayout.tsx                # Admin sidebar + header
+│   │   │   ├── 📄 CurrencySelector.tsx           # Currency dropdown
+│   │   │   ├── 📄 ErrorState.tsx                 # Reusable error UI block
+│   │   │   ├── 📄 FlightCard.tsx                 # Flight summary card
+│   │   │   ├── 📄 Footer.tsx                     # Premium 4-column footer
+│   │   │   ├── 📄 FooterInfoModal.tsx            # Modal for footer info links
+│   │   │   ├── 📄 LoadingSpinner.tsx             # Loading spinner
+│   │   │   ├── 📄 Navbar.tsx                     # Glass navbar with mobile menu
+│   │   │   ├── 📄 ProtectedRoute.tsx             # Passenger + admin route guards
+│   │   │   ├── 📄 Reveal.tsx                     # Scroll-reveal IntersectionObserver wrapper
+│   │   │   ├── 📄 StatusBadge.tsx                # Color-coded flight/booking status pill
+│   │   │   ├── 📄 ThemeToggle.tsx                # Dark/light switch
+│   │   │   └── 📄 WeatherWidget.tsx              # WeatherAPI.com live widget
+│   │   ├── 📁 hooks
+│   │   │   └── 📄 usePrice.ts                    # Currency-aware price formatter
+│   │   ├── 📁 lib
+│   │   │   ├── 📄 api.ts                         # Axios instance + interceptors
+│   │   │   ├── 📄 queryClient.ts                 # TanStack Query client config
+│   │   │   ├── 📄 socket.ts                      # Socket.IO client init + helpers
+│   │   │   └── 📄 utils.ts                       # Generic frontend utils (cn, etc.)
+│   │   ├── 📁 pages
+│   │   │   ├── 📁 admin
+│   │   │   │   ├── 📄 AdminAdmins.tsx            # Manage admin accounts
+│   │   │   │   ├── 📄 AdminAirports.tsx          # Step-by-step airport builder
+│   │   │   │   ├── 📄 AdminAnalytics.tsx         # Recharts: bookings, revenue, routes
+│   │   │   │   ├── 📄 AdminAnnouncements.tsx     # Announcement CRUD
+│   │   │   │   ├── 📄 AdminAuditLog.tsx          # Filterable log + PDF/JSON export
+│   │   │   │   ├── 📄 AdminDashboard.tsx         # Admin KPI overview
+│   │   │   │   ├── 📄 AdminFlights.tsx           # Flight CRUD + status updates
+│   │   │   │   ├── 📄 AdminGates.tsx             # Gate status management
+│   │   │   │   ├── 📄 AdminLogin.tsx             # Separate admin login
+│   │   │   │   ├── 📄 AdminNotifications.tsx     # Admin notification center
+│   │   │   │   └── 📄 AdminPassengers.tsx        # Passenger management
+│   │   │   ├── 📄 AirportMap.tsx                 # Leaflet world map + SVG indoor map
+│   │   │   ├── 📄 Announcements.tsx              # Public announcements page
+│   │   │   ├── 📄 Baggage.tsx                    # Tag tracker + policy reference
+│   │   │   ├── 📄 BoardingPass.tsx               # QR boarding pass (multi-passenger)
+│   │   │   ├── 📄 Checkout.tsx                   # Stripe Elements checkout + add-ons
+│   │   │   ├── 📄 Dashboard.tsx                  # Passenger trip overview with check-in/refund
+│   │   │   ├── 📄 FlightDetails.tsx              # Flight detail + multi-passenger booking form
+│   │   │   ├── 📄 FlightSearch.tsx               # Search results with sort + filter
+│   │   │   ├── 📄 Home.tsx                       # Landing page with hero, destinations, FAQ
+│   │   │   ├── 📄 Login.tsx                      # Split-screen login
+│   │   │   ├── 📄 NotFound.tsx                   # 404 page
+│   │   │   ├── 📄 Notifications.tsx              # Passenger notification center
+│   │   │   ├── 📄 Profile.tsx                    # Profile + avatar upload
+│   │   │   └── 📄 Register.tsx                   # Register with password strength meter
+│   │   ├── 📁 store
+│   │   │   ├── 📄 adminAuthStore.ts              # Admin auth state (separate from passenger)
+│   │   │   ├── 📄 authStore.ts                   # Zustand auth state + hydration
+│   │   │   ├── 📄 currencyStore.ts               # Selected currency + rate
+│   │   │   ├── 📄 themeStore.ts                  # Dark/light theme with localStorage persist
+│   │   │   └── 📄 uiStore.ts                     # Global UI state (modals, toasts, etc.)
+│   │   ├── 📁 styles
+│   │   │   └── 🎨 index.css                      # Tailwind + CSS variable theme system
+│   │   ├── 📁 types
+│   │   │   └── 📄 index.ts                       # Shared TypeScript interfaces
+│   │   ├── 📄 App.tsx                            # Route definitions
+│   │   ├── 📄 main.tsx                           # Entry point
+│   │   └── 📄 vite-env.d.ts                      # Vite env type declarations
+│   ├── ⚙️ .gitignore
+│   ├── 🌐 index.html                             # Vite HTML entry
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 postcss.config.js                      # PostCSS pipeline (Tailwind)
+│   ├── 📄 tailwind.config.js                     # Tailwind config (JS variant)
+│   ├── 📄 tailwind.config.ts                     # Tailwind config (TS variant)
+│   ├── ⚙️ tsconfig.json
+│   ├── ⚙️ tsconfig.node.json
+│   └── 📄 vite.config.ts                         # Vite build/dev server config
+├── ⚙️ .gitignore
+└── 📖 README.md                                  # Project docs
 
 ---
 
