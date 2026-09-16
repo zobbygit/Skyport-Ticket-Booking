@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+
 import {
   Cloud,
   CloudRain,
@@ -7,8 +9,6 @@ import {
   Thermometer,
   Eye,
   Droplets,
-  Radio,
-  Sparkles,
 } from "lucide-react";
 
 interface Weather {
@@ -46,16 +46,22 @@ function WeatherIcon({ condition }: { condition: string }) {
 
 function iconTone(condition: string) {
   const lower = condition.toLowerCase();
+
   if (lower.includes("rain") || lower.includes("drizzle")) {
     return "bg-sky-50 text-sky-600 ring-sky-100 dark:bg-sky-900/30 dark:text-sky-400 dark:ring-sky-900/40";
   }
+
   if (lower.includes("sunny") || lower.includes("clear")) {
     return "bg-amber-50 text-amber-600 ring-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-900/40";
   }
+
   return "bg-slate-50 text-slate-500 ring-slate-100 dark:bg-slate-900/40 dark:text-slate-400 dark:ring-slate-800/60";
 }
 
-export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
+export default function WeatherWidget({
+  city,
+  iata,
+}: WeatherWidgetProps) {
   const [weather, setWeather] = useState<Weather | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -63,51 +69,69 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
   useEffect(() => {
     if (!city) return;
 
+    let cancelled = false;
+
     setLoading(true);
     setError(false);
     setWeather(null);
 
-    fetch(`/api/weather?city=${encodeURIComponent(city)}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Weather request failed");
-        }
-        return response.json();
+    api
+      .get("/weather", {
+        params: {
+          city,
+        },
       })
-      .then((data) => {
+      .then((response) => {
+        if (cancelled) return;
+
+        const data = response.data;
+
         if (!data) {
           throw new Error("Invalid weather response");
         }
 
         setWeather({
-          temp_c: data.temp_c,
-          condition: data.condition,
-          icon: data.icon,
-          wind_kph: data.wind_kph,
-          humidity: data.humidity,
-          visibility_km: data.visibility_km,
-          feels_like_c: data.feels_like_c,
+          temp_c: Number(data.temp_c),
+          condition: String(data.condition || "Unknown"),
+          icon: String(data.icon || ""),
+          wind_kph: Number(data.wind_kph),
+          humidity: Number(data.humidity),
+          visibility_km: Number(data.visibility_km),
+          feels_like_c: Number(data.feels_like_c),
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        if (cancelled) return;
+
+        console.error("Weather request failed:", err);
         setError(true);
         setWeather(null);
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [city]);
+
 
   if (loading) {
     return (
       <div className="card relative h-32 overflow-hidden p-4">
         <div className="wf-sheen pointer-events-none absolute inset-0 opacity-70" />
+
         <div className="relative flex h-full items-center gap-4">
           <div className="h-14 w-14 shrink-0 rounded-2xl bg-slate-100 dark:bg-slate-800" />
+
           <div className="flex-1 space-y-2">
             <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700" />
             <div className="h-6 w-20 rounded bg-slate-100 dark:bg-slate-800" />
           </div>
+
           <div className="hidden grid-cols-2 gap-2 sm:grid">
             {[0, 1, 2, 3].map((i) => (
               <div
@@ -125,6 +149,12 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
     return null;
   }
 
+  const weatherIcon = weather.icon
+    ? weather.icon.startsWith("//")
+      ? `https:${weather.icon}`
+      : weather.icon
+    : "";
+
   return (
     <div className="card wf-fade relative overflow-hidden p-4 sm:p-5">
       {/* Corner glow */}
@@ -136,10 +166,12 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600/10 text-brand-600 dark:text-brand-400">
             <Thermometer size={15} className="wf-float" />
           </span>
+
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
               Live conditions
             </p>
+
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
               Weather at {iata} — {city}
             </p>
@@ -154,14 +186,24 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
 
       {/* Body */}
       <div className="relative mt-4 grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
-        {/* Temp tile */}
+        {/* Temperature */}
         <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-3 dark:border-slate-800/70 dark:bg-slate-950/40">
           <span
             className={`grid h-12 w-12 place-items-center rounded-xl ring-1 ${iconTone(
               weather.condition
             )}`}
           >
-            <WeatherIcon condition={weather.condition} />
+            {weatherIcon ? (
+              <img
+                src={weatherIcon}
+                alt={weather.condition}
+                width={40}
+                height={40}
+                className="h-10 w-10 object-contain"
+              />
+            ) : (
+              <WeatherIcon condition={weather.condition} />
+            )}
           </span>
 
           <div>
@@ -171,6 +213,7 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
                 °C
               </span>
             </p>
+
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {weather.condition}
             </p>
@@ -184,16 +227,19 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
             label="Feels"
             value={`${Math.round(weather.feels_like_c)}°C`}
           />
+
           <MetricTile
             icon={<Wind size={12} />}
             label="Wind"
             value={`${Math.round(weather.wind_kph)} km/h`}
           />
+
           <MetricTile
             icon={<Droplets size={12} />}
             label="Humidity"
             value={`${weather.humidity}%`}
           />
+
           <MetricTile
             icon={<Eye size={12} />}
             label="Visibility"
@@ -202,28 +248,61 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
         </div>
       </div>
 
-      {/* Motion */}
+      {/* Animations */}
       <style>{`
         @keyframes wf-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-2px); }
-        }
-        @keyframes wf-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.55); }
-          50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
-        }
-        @keyframes wf-sheen {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        @keyframes wf-fade {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+          0%, 100% {
+            transform: translateY(0);
+          }
+
+          50% {
+            transform: translateY(-2px);
+          }
         }
 
-        .wf-float { animation: wf-float 3s ease-in-out infinite; }
-        .wf-pulse { animation: wf-pulse 2s ease-out infinite; }
-        .wf-fade { animation: wf-fade .4s ease-out both; }
+        @keyframes wf-pulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(16,185,129,.55);
+          }
+
+          50% {
+            box-shadow: 0 0 0 6px rgba(16,185,129,0);
+          }
+        }
+
+        @keyframes wf-sheen {
+          0% {
+            background-position: -200% 0;
+          }
+
+          100% {
+            background-position: 200% 0;
+          }
+        }
+
+        @keyframes wf-fade {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .wf-float {
+          animation: wf-float 3s ease-in-out infinite;
+        }
+
+        .wf-pulse {
+          animation: wf-pulse 2s ease-out infinite;
+        }
+
+        .wf-fade {
+          animation: wf-fade .4s ease-out both;
+        }
 
         .wf-sheen {
           background: linear-gradient(
@@ -234,12 +313,18 @@ export default function WeatherWidget({ city, iata }: WeatherWidgetProps) {
             rgba(148,163,184,.22) 55%,
             transparent 80%
           );
+
           background-size: 200% 100%;
           animation: wf-sheen 1.6s linear infinite;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .wf-float, .wf-pulse, .wf-fade, .wf-sheen { animation: none !important; }
+          .wf-float,
+          .wf-pulse,
+          .wf-fade,
+          .wf-sheen {
+            animation: none !important;
+          }
         }
       `}</style>
     </div>
@@ -261,6 +346,7 @@ function MetricTile({
         {icon}
         {label}
       </p>
+
       <p className="mt-0.5 truncate text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-100">
         {value}
       </p>
